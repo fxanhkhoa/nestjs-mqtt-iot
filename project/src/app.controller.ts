@@ -1,10 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { AppService } from './app.service';
-import { MessagePattern, Payload, Ctx, MqttContext } from '@nestjs/microservices';
+import { MessagePattern, Payload, Ctx, MqttContext, ClientMqtt } from '@nestjs/microservices';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    @Inject('MATH_SERVICE')
+    private readonly client: ClientMqtt
+  ) {}
 
   @Get()
   getHello(): string {
@@ -23,5 +27,6 @@ export class AppController {
   getPrinted(@Payload() data: any, @Ctx() context: MqttContext) {
     console.log(`Topic: ${context.getTopic()}`);
     console.log(data)
+    this.client.emit('message_control', 'run now')
   }
 }
